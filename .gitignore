@@ -1,0 +1,6 @@
+# Ignore everything in workspace except our Claude hooks/settings
+workspace/*
+!workspace/.claude/
+workspace/.claude/*
+!workspace/.claude/settings.json
+!workspace/.claude/hooks/

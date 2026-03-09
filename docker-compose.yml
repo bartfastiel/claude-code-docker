@@ -1,0 +1,44 @@
+services:
+  claude-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: claude-agent:latest
+    container_name: claude-agent
+    ports:
+      - "7681:7681"
+    volumes:
+      # Mount host Claude credentials dir (auth, settings, history) — read-write so Claude can update tokens
+      - type: bind
+        source: ${USERPROFILE}/.claude
+        target: /root/.claude
+      # Mount the main Claude config file separately (lives outside the .claude/ dir)
+      - type: bind
+        source: ${USERPROFILE}/.claude.json
+        target: /root/.claude.json
+      # Mount host git config (for git operations on GitHub issues)
+      - type: bind
+        source: ${USERPROFILE}/.gitconfig
+        target: /root/.gitconfig
+        read_only: true
+      # Mount host SSH keys (for git push/pull)
+      - type: bind
+        source: ${USERPROFILE}/.ssh
+        target: /root/.ssh
+        read_only: true
+      # Persistent workspace (git repos, working files)
+      - type: bind
+        source: ./workspace
+        target: /workspace
+    environment:
+      - TERM=xterm-256color
+      - COLORTERM=truecolor
+      - LANG=C.UTF-8
+    # Keep stdin open for TTY
+    stdin_open: true
+    tty: true
+    # Restart unless manually stopped
+    restart: unless-stopped
+    # Allow git operations and SSH
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
